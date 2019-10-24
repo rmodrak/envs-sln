@@ -1,0 +1,65 @@
+#!/bin/bash -e
+
+# ACTIVATES MTUQ ON SLN
+
+
+if [ "${BASH_SOURCE[0]}" == "${0}" ];
+then
+    echo
+    echo "This script is not being sourced"
+    echo
+    exit 1
+fi
+
+
+# check environment
+if command -v conda > /dev/null
+then
+    echo ""
+    echo "Cannot proceed while conda is active"
+    echo ""
+    return 1
+fi
+if command -v virtualenv > /dev/null
+then
+    echo "Virtualenv executable found: $(command -v virtualenv)"
+elif [ -e $HOME/.local/bin/virtualenv ]
+then
+    export PATH=${PATH:+${PATH}:}"$HOME/.local/bin"
+    echo "Virtualenv executable found: $(command -v virtualenv)"
+else
+    echo ""
+    echo "virtualenv executable not found"
+    echo ""
+    return 1
+fi
+
+
+# adjust to match install.bash location
+VENV="$HOME/virtual/mtuq"
+
+
+if [ -e $VENV ]
+then
+    echo "Environment found: $VENV"
+else
+    echo ""
+    echo "Environment not found: $VENV"
+    echo ""
+    return 1
+fi
+
+
+# load centos mpi
+module load mpi/openmpi-x86_64
+
+
+# activate virutal environment
+source $HOME/virtual/mtuq/bin/activate
+
+
+echo
+echo "Successfully activated $VENV"
+echo
+
+

@@ -1,0 +1,90 @@
+#!/bin/bash -e
+
+# INSTALLS MTUQ ON SLN
+
+
+# check environment
+if command -v conda > /dev/null
+then
+    echo ""
+    echo "Cannot proceed while conda is active"
+    echo ""
+    exit 1
+fi
+if command -v virtualenv > /dev/null
+then
+    echo "Virtualenv found: $(command -v virtualenv)"
+elif [ -e $HOME/.local/bin/virtualenv ]
+then
+    export PATH=${PATH:+${PATH}:}"$HOME/.local/bin"
+    echo "Virtualenv found: $(command -v virtualenv)"
+else
+    echo ""
+    echo "Environment error: virtualenv not found"
+    echo ""
+    exit 1
+fi
+
+
+# adjust to match your preferred location
+VENV="$HOME/virtual/mtuq"
+MTUQ="$HOME/packages/mtuq"
+
+
+if [ -e $VENV ]
+then
+    echo ""
+    echo "Directory already exists: $VENV"
+    echo ""
+    exit 1
+fi
+
+if [[ -e $MTUQ ]] 
+then
+    echo ""
+    echo "Directory already exists: $MTUQ"
+    echo ""
+    exit 1
+fi
+
+if [[ ! -d $(dirname $MTUQ) ]]
+then
+    echo ""
+    echo "Directory not found: $(dirname $MTUQ)"
+    echo ""
+    exit 1
+fi
+
+
+# load centos mpi
+module load mpi/openmpi-x86_64
+
+
+# create and load virtual environment
+virtualenv $VENV
+source "$VENV/bin/activate"
+
+
+# install dependencies
+pip install numpy
+pip install mpi4py
+
+
+# install mtuq in editable mode
+git clone https://github.com/rmodrak/mtuq.git $MTUQ
+cd $MTUQ
+pip install -e .
+
+
+# unpack examples
+./data/examples/unpack.bash
+
+
+echo
+echo "Successfully installed mtuq"
+echo
+
+
+deactivate
+
+
